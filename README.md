@@ -383,7 +383,7 @@ MIT License - See LICENSE file for details
 
 ## About
 
-Created by [Ken Thompson](https://github.com/your-username) at [Lodgepole I/O](https://lodgepole.io) - Workflow design and operational systems consulting.
+Created by [Ken Davis](https://github.com/KenDavisDev) at [Lodgepole I/O](https://lodgepole.io) - Workflow design and operational systems consulting.
 
 This workflow is used in production for monthly client invoicing, processing $10K-50K in billings per month since 2024.
 
