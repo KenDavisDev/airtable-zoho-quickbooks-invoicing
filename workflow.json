@@ -1,0 +1,844 @@
+{
+  "name": "Invoicing",
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "zohoApiUrl",
+              "value": "https://www.zohoapis.com/invoice/v3",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "zohoOrganizationId",
+              "value": "YOUR_ZOHO_ORG_ID",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "c62cd538-b7cc-4e60-9081-2a2ae0abdf80",
+      "name": "Workflow Configuration",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -2016,
+        288
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Workflow Configuration').first().json.zohoApiUrl }}/invoices?organization_id={{ $('Workflow Configuration').first().json.zohoOrganizationId }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "oAuth2Api",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { \"customer_id\": $json.customer_id, \"invoice_number\": $json.invoice_number, \"date\": $json.date, \"line_items\": $json.line_items, \"notes\": $json.notes } }}",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "274763b6-1b0f-457b-bbec-bd6ab83d5af1",
+      "name": "Create Invoice in Zoho",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -192,
+        112
+      ],
+      "credentials": {
+        "zohoOAuth2Api": {
+          "id": "YOUR_ZOHO_OAUTH_CREDENTIAL_ID",
+          "name": "Zoho account"
+        },
+        "oAuth2Api": {
+          "id": "YOUR_ZOHO_OAUTH_CREDENTIAL_ID",
+          "name": "Zoho - Lodgepole"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "/invoicing",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -2240,
+        288
+      ],
+      "id": "13a83d30-eb3b-4f21-9f51-9541b353a5fd",
+      "name": "Webhook",
+      "webhookId": "cacbdeda-9b7d-45ba-afcc-15766402e96d"
+    },
+    {
+      "parameters": {
+        "base": {
+          "__rl": true,
+          "value": "YOUR_AIRTABLE_BASE_ID",
+          "mode": "list",
+          "cachedResultName": "Lodgepole I/O",
+          "cachedResultUrl": "https://airtable.com/YOUR_AIRTABLE_BASE_ID"
+        },
+        "table": {
+          "__rl": true,
+          "value": "YOUR_INVOICING_TABLE_ID",
+          "mode": "list",
+          "cachedResultName": "Invoicing",
+          "cachedResultUrl": "https://airtable.com/YOUR_AIRTABLE_BASE_ID/YOUR_INVOICING_TABLE_ID"
+        },
+        "id": "={{ $('Webhook').item.json.body.recordId }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -1792,
+        288
+      ],
+      "id": "05679fcb-b91b-4bd7-bccb-c5a46a7cd2d3",
+      "name": "Get Invoice",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "YOUR_AIRTABLE_CREDENTIAL_ID",
+          "name": "Lodgepole"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "id-1",
+              "leftValue": "={{ $json.customer_id }}",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
+            },
+            {
+              "id": "id-2",
+              "leftValue": "={{ $json.line_items }}",
+              "operator": {
+                "type": "array",
+                "operation": "notEmpty"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "3ee72eed-f94d-4f04-8878-17086600537f",
+      "name": "Check Required Fields",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -432,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "errorMessage": "=Missing required data for Zoho invoice. Customer ID: {{ $json.customer_id || \"MISSING\" }}, Line Items: {{ $json.line_items?.length || 0 }} items"
+      },
+      "id": "458aabeb-8566-496c-a67a-83a2eccf2d41",
+      "name": "Missing Required Data",
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        32,
+        384
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "289365aa-fea8-4b61-9f64-b5c5be595e82",
+              "leftValue": "={{ $json.code }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "6c1b404d-515b-4b13-9366-8bba1fbc06b0",
+              "leftValue": "={{ $json.code }}",
+              "rightValue": 1001,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "id": "96dfd2ee-d176-48f1-ba95-82e63c6fcac9",
+      "name": "Check Zoho Response",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        48,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "errorMessage": "=Zoho API Error: {{ $json.message || $json.error || \"Unknown error\" }}. Status: {{ $json.code || \"N/A\" }}. Invoice: {{ $('Get Invoice').first().json.RecordID }}"
+      },
+      "id": "0042b801-51ec-4824-a898-fb4d8103858b",
+      "name": "Zoho API Error",
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        560,
+        272
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "id-1",
+              "leftValue": "={{ $('Get Invoice').item.json['Time Logs'] }}",
+              "operator": {
+                "type": "array",
+                "operation": "exists"
+              }
+            },
+            {
+              "id": "id-2",
+              "leftValue": "={{ $('Get Invoice').item.json['Time Logs'] }}",
+              "operator": {
+                "type": "array",
+                "operation": "notEmpty"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "f803f7de-3b2a-4bef-8c9a-3843d95df1a7",
+      "name": "Check Time Logs Exist",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -1568,
+        96
+      ]
+    },
+    {
+      "parameters": {
+        "errorMessage": "=No time logs found for this invoice. Invoice #{{ $('Get Invoice').first().json.RecordID }} has no associated time entries."
+      },
+      "id": "5435cb44-b0a8-4f62-93a3-2d6fa3d28f2c",
+      "name": "No Time Logs Found",
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        -1264,
+        192
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Generate QuickBooks IIF file from time entries\n// Get the time log data that was already fetched\nconst timeLogNodes = $('Get Time Entries').all(); // The Airtable node that fetches time logs\nconst invoiceData = $('Get Invoice').first().json;\n\n// IIF Header for invoices\nlet iifContent = \"!TRNS\\tTRNSID\\tTRNSTYPE\\tDATE\\tACCNT\\tNAME\\tCLASS\\tAMOUNT\\tDOCNUM\\tCLEAR\\tTOPRINT\\tMEMO\\n\";\niifContent += \"!SPL\\tSPLID\\tTRNSTYPE\\tDATE\\tACCNT\\tNAME\\tCLASS\\tAMOUNT\\tDOCNUM\\tCLEAR\\tQNTY\\tPRICE\\tINVITEM\\tTAXABLE\\tMEMO\\n\";\niifContent += \"!ENDTRNS\\n\";\n\n// Format date as MM/DD/YYYY for IIF content\nconst invoiceDate = new Date(invoiceData.Date);\nconst formattedDate = `${(invoiceDate.getMonth() + 1).toString().padStart(2, '0')}/${invoiceDate.getDate().toString().padStart(2, '0')}/${invoiceDate.getFullYear()}`;\n\n// Format date as YYYYMMDD for filename\nconst year = invoiceDate.getFullYear();\nconst month = (invoiceDate.getMonth() + 1).toString().padStart(2, '0');\nconst day = invoiceDate.getDate().toString().padStart(2, '0');\nconst fileDate = `${year}${month}${day}`;\n\n// Get client name from RecordID (format: \"20260130-Shervins\")\nconst recordID = invoiceData.RecordID || \"\";\nconst clientName = recordID.split('-')[1] || \"Client\"; // Gets \"Shervins\" from \"20260130-Shervins\"\n\n\n// Get total amount\nconst totalAmount = invoiceData['Invoice Total'] || 0;\n\n// Header transaction line\niifContent += `TRNS\\t\\tINVOICE\\t${formattedDate}\\tAccounts Receivable\\t${clientName}\\t\\t${totalAmount}\\t${invoiceData.RecordID}\\tN\\tY\\t\\n`;\n\n// Detail lines for each time entry\ntimeLogNodes.forEach(node => {\n  const timeEntry = node.json;\n  \n  // Extract fields\n  const titleField = timeEntry['Title'];\n  const title = Array.isArray(titleField) ? titleField[0] : (typeof titleField === 'object' ? titleField.value : titleField) || '';\n  \n  const hoursField = timeEntry['Total Hours'];\n  const hours = Array.isArray(hoursField) ? hoursField[0] : (typeof hoursField === 'object' ? hoursField.value : hoursField) || 0;\n  \n  const dateField = timeEntry['Date'];\n  const date = Array.isArray(dateField) ? dateField[0] : (typeof dateField === 'object' ? dateField.value : dateField) || '';\n  \n  const projectNameField = timeEntry['Project Name'];\n  const projectName = Array.isArray(projectNameField) ? projectNameField[0] : (typeof projectNameField === 'object' ? projectNameField.value : projectNameField) || 'Services';\n  \n  const rate = invoiceData['Billable Rate'] ? invoiceData['Billable Rate'][0] : 0;\n  const amount = -(hours * rate); // Negative for split lines\n  \n  // Round hours to 2 decimals\n  const roundedHours = Math.round(hours * 100) / 100;\n  \n  const memo = `${date}: ${title}`;\n  \n  // Split line\n  iifContent += `SPL\\t\\tINVOICE\\t${formattedDate}\\tIncome Account\\t${clientName}\\t\\t${amount}\\t${invoiceData.RecordID}\\tN\\t${roundedHours}\\t${rate}\\t${projectName}\\tN\\t${memo}\\n`;\n});\n\n// End transaction\niifContent += \"ENDTRNS\\n\";\n\n// Return the IIF content with formatted filename: client_name YYYYMMDD.iif\nreturn [{ \n  json: { \n    iifContent, \n    filename: `${clientName} ${fileDate} Invoice.iif` \n  } \n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        336,
+        80
+      ],
+      "id": "541108e2-31ba-4341-b7f2-64ed8e8e6886",
+      "name": "Create QB Desktop iif file (Javascript)"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "path": "=/Lodgepole IO/To-do/Invoicing/{{ $json.filename }}"
+      },
+      "type": "n8n-nodes-base.dropbox",
+      "typeVersion": 1,
+      "position": [
+        560,
+        80
+      ],
+      "id": "0358780f-e3ca-4dde-b490-0d3b35d55711",
+      "name": "Upload QB file to Dropbox",
+      "credentials": {
+        "dropboxOAuth2Api": {
+          "id": "YOUR_DROPBOX_CREDENTIAL_ID",
+          "name": "Dropbox account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the invoice data\nconst invoiceData = $('Get Invoice').first().json;\nconst billableRate = invoiceData['Billable Rate'] ? invoiceData['Billable Rate'][0] : 0;\nconst invoiceDate = invoiceData['Date'] || new Date().toISOString().split('T')[0];\nconst invoiceNumber = invoiceData['RecordID'];\nconst zohoCustomerID = invoiceData['Zoho Customer ID'] ? invoiceData['Zoho Customer ID'][0] : null;\n\nconst lineItems = [];\n\n// Get all merged items (both time logs and expenses)\nconst allItems = $input.all();\n\nallItems.forEach(item => {\n  const data = item.json;\n  \n  // Check if this is a time log (has Total Hours field) or expense (has Amount field)\n  if (data['Total Hours']) {\n    // This is a time log\n    const titleField = data['Title'];\n    const title = Array.isArray(titleField) ? titleField[0] : (typeof titleField === 'object' ? titleField.value : titleField) || 'Time Entry';\n    \n    const hoursField = data['Total Hours'];\n    const hoursRaw = Array.isArray(hoursField) ? hoursField[0] : (typeof hoursField === 'object' ? hoursField.value : hoursField) || 0;\n    const hours = Math.round(hoursRaw * 100) / 100;\n    \n    const dateField = data['Date'];\n    const date = Array.isArray(dateField) ? dateField[0] : (typeof dateField === 'object' ? dateField.value : dateField) || '';\n    \n    const projectNameField = data['Project Name'];\n    const projectName = Array.isArray(projectNameField) ? projectNameField[0] : (typeof projectNameField === 'object' ? projectNameField.value : projectNameField) || 'Consulting Services';\n    \n    lineItems.push({\n      name: projectName,\n      description: `${date}: ${title}`,\n      rate: billableRate,\n      quantity: hours\n    });\n    \n  } else if (data['Amount']) {\n    // This is an expense\n    const expenseNameField = data['Expense Name'];\n    const expenseName = Array.isArray(expenseNameField) ? expenseNameField[0] : (typeof expenseNameField === 'object' ? expenseNameField.value : expenseNameField) || 'Expense';\n    \n    const amountField = data['Amount'];\n    const amount = Array.isArray(amountField) ? amountField[0] : (typeof amountField === 'object' ? amountField.value : amountField) || 0;\n    \n    const dateField = data['Date'];\n    const date = Array.isArray(dateField) ? dateField[0] : (typeof dateField === 'object' ? dateField.value : dateField) || '';\n    \n    const notesField = data['Notes'];\n    const notes = Array.isArray(notesField) ? notesField[0] : (typeof notesField === 'object' ? notesField.value : notesField) || '';\n    \n    const categoryField = data['Category'];\n    const category = Array.isArray(categoryField) ? categoryField[0] : (typeof categoryField === 'object' ? categoryField.value : categoryField) || '';\n    \n    lineItems.push({\n      name: \"Expense\",\n      description: `${date}: ${expenseName}${category ? ' (' + category + ')' : ''}${notes ? ' - ' + notes : ''}`,\n      rate: amount,\n      quantity: 1\n    });\n  }\n});\n\n// Return all fields needed for Zoho\nreturn [{\n  json: {\n    customer_id: zohoCustomerID,\n    invoice_number: invoiceNumber,\n    date: invoiceDate,\n    line_items: lineItems,\n    notes: `Invoice for ${invoiceData.RecordID || 'services'}`\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -656,
+        240
+      ],
+      "id": "56a98ba3-fca3-4fa2-9227-3734ff1a0881",
+      "name": "Create Zoho fields (JavaScript)"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "0dafa8ae-3bb0-4815-b873-8a074c027cbe",
+              "leftValue": "",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -1568,
+        544
+      ],
+      "id": "716ec0ca-0a7c-4648-a6a9-18d2cc76f6e1",
+      "name": "Check if Expenses exist"
+    },
+    {
+      "parameters": {
+        "errorMessage": "=No time logs found for this invoice. Invoice #{{ $('Get Invoice').first().json.RecordID }} has no associated time entries."
+      },
+      "id": "d144051c-b76a-40df-9d13-319cfa6edc7e",
+      "name": "No Expenses Found",
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        -1280,
+        624
+      ]
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "['Time Logs']",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -1264,
+        0
+      ],
+      "id": "51bb0379-d32a-40c8-9ccb-4de128590a5b",
+      "name": "Split Out Time"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "Expenses",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -1280,
+        432
+      ],
+      "id": "d1f8a378-1dda-40e4-a558-6b08fdc828d0",
+      "name": "Split Out Expenses"
+    },
+    {
+      "parameters": {
+        "base": {
+          "__rl": true,
+          "value": "YOUR_AIRTABLE_BASE_ID",
+          "mode": "list",
+          "cachedResultName": "Lodgepole I/O",
+          "cachedResultUrl": "https://airtable.com/YOUR_AIRTABLE_BASE_ID"
+        },
+        "table": {
+          "__rl": true,
+          "value": "YOUR_EXPENSES_TABLE_ID",
+          "mode": "list",
+          "cachedResultName": "Expenses",
+          "cachedResultUrl": "https://airtable.com/YOUR_AIRTABLE_BASE_ID/YOUR_EXPENSES_TABLE_ID"
+        },
+        "id": "={{ $json.Expenses }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -1040,
+        432
+      ],
+      "id": "06b0821e-677c-4600-bca1-e14d08be8c4f",
+      "name": "Get Expenses",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "YOUR_AIRTABLE_CREDENTIAL_ID",
+          "name": "Lodgepole"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "base": {
+          "__rl": true,
+          "value": "YOUR_AIRTABLE_BASE_ID",
+          "mode": "list",
+          "cachedResultName": "Lodgepole I/O",
+          "cachedResultUrl": "https://airtable.com/YOUR_AIRTABLE_BASE_ID"
+        },
+        "table": {
+          "__rl": true,
+          "value": "YOUR_TIME_LOGS_TABLE_ID",
+          "mode": "list",
+          "cachedResultName": "Time Logs",
+          "cachedResultUrl": "https://airtable.com/YOUR_AIRTABLE_BASE_ID/YOUR_TIME_LOGS_TABLE_ID"
+        },
+        "id": "={{ $json['[\\'Time Logs\\']'] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -1040,
+        0
+      ],
+      "id": "5b8d0f99-5ff9-4279-b231-05e25f353f8e",
+      "name": "Get Time Entries",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "YOUR_AIRTABLE_CREDENTIAL_ID",
+          "name": "Lodgepole"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -848,
+        240
+      ],
+      "id": "e4c89f6a-2581-4e31-bb89-2744891893be",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "user",
+        "user": {
+          "__rl": true,
+          "value": "YOUR_SLACK_USER_ID",
+          "mode": "list",
+          "cachedResultName": "YOUR_SLACK_USERNAME"
+        },
+        "text": "=Can not create Zoho invoice, missing data for:  {{ $('Get Invoice').item.json.RecordID }}",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        -192,
+        384
+      ],
+      "id": "78574c98-bf48-4315-8647-00ac02cb1d88",
+      "name": "Send Slack message",
+      "webhookId": "99f786f4-19df-4ffc-a13f-3cbac76cb9ce",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "YOUR_SLACK_CREDENTIAL_ID",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "user",
+        "user": {
+          "__rl": true,
+          "value": "YOUR_SLACK_USER_ID",
+          "mode": "list",
+          "cachedResultName": "YOUR_SLACK_USERNAME"
+        },
+        "text": "=Zoho could not create the {{ $('Check Required Fields').item.json.invoice_number }} invoice.",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        336,
+        272
+      ],
+      "id": "d455ae70-b2f2-4735-8040-4ac4549e4eea",
+      "name": "Send Slack message1",
+      "webhookId": "6c7848f9-b188-4fdf-b8ac-5ec0a68d20a0",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "YOUR_SLACK_CREDENTIAL_ID",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "path": "=/Lodgepole IO/To-do/Invoicing/{{ $('Get the Zoho invoice').first().json.invoice.invoice_number }}.pdf",
+        "binaryData": true
+      },
+      "type": "n8n-nodes-base.dropbox",
+      "typeVersion": 1,
+      "position": [
+        560,
+        -96
+      ],
+      "id": "c43d515f-38b5-4431-9e66-7cd4b4cbd393",
+      "name": "Upload a file",
+      "credentials": {
+        "dropboxOAuth2Api": {
+          "id": "YOUR_DROPBOX_CREDENTIAL_ID",
+          "name": "Dropbox account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Workflow Configuration').first().json.zohoApiUrl }}/invoices/{{ $('Create Invoice in Zoho').item.json.invoice.invoice_id }}?accept=pdf&organization_id={{ $('Workflow Configuration').first().json.zohoOrganizationId }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "oAuth2Api",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        336,
+        -96
+      ],
+      "id": "00e54b87-de83-47e7-abd4-f308cf3708b8",
+      "name": "Get the Zoho invoice",
+      "credentials": {
+        "oAuth2Api": {
+          "id": "YOUR_ZOHO_OAUTH_CREDENTIAL_ID",
+          "name": "Zoho - Lodgepole"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Workflow Configuration": {
+      "main": [
+        [
+          {
+            "node": "Get Invoice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Workflow Configuration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Invoice": {
+      "main": [
+        [
+          {
+            "node": "Check if Expenses exist",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Check Time Logs Exist",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Time Logs Exist": {
+      "main": [
+        [
+          {
+            "node": "Split Out Time",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Time Logs Found",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Required Fields": {
+      "main": [
+        [
+          {
+            "node": "Create Invoice in Zoho",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Slack message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Invoice in Zoho": {
+      "main": [
+        [
+          {
+            "node": "Check Zoho Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Zoho Response": {
+      "main": [
+        [
+          {
+            "node": "Create QB Desktop iif file (Javascript)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get the Zoho invoice",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Slack message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create QB Desktop iif file (Javascript)": {
+      "main": [
+        [
+          {
+            "node": "Upload QB file to Dropbox",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Zoho fields (JavaScript)": {
+      "main": [
+        [
+          {
+            "node": "Check Required Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check if Expenses exist": {
+      "main": [
+        [
+          {
+            "node": "Split Out Expenses",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Expenses Found",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out Time": {
+      "main": [
+        [
+          {
+            "node": "Get Time Entries",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out Expenses": {
+      "main": [
+        [
+          {
+            "node": "Get Expenses",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Time Entries": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Expenses": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Create Zoho fields (JavaScript)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Slack message": {
+      "main": [
+        [
+          {
+            "node": "Missing Required Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Slack message1": {
+      "main": [
+        [
+          {
+            "node": "Zoho API Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload a file": {
+      "main": [
+        []
+      ]
+    },
+    "Get the Zoho invoice": {
+      "main": [
+        [
+          {
+            "node": "Upload a file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "c58038f7-9289-47b3-b182-ab43ed82064f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1f1723047214f7fc725b5736e5e3987ea6bcac0b9ff5a93b735f0a76f162f39b"
+  },
+  "id": "MoAWl0zG9DLPvtFC5CCL0",
+  "tags": []
+}
