@@ -3,38 +3,8 @@
   "nodes": [
     {
       "parameters": {
-        "assignments": {
-          "assignments": [
-            {
-              "id": "id-1",
-              "name": "zohoApiUrl",
-              "value": "https://www.zohoapis.com/invoice/v3",
-              "type": "string"
-            },
-            {
-              "id": "id-2",
-              "name": "zohoOrganizationId",
-              "value": "YOUR_ZOHO_ORG_ID",
-              "type": "string"
-            }
-          ]
-        },
-        "includeOtherFields": true,
-        "options": {}
-      },
-      "id": "c62cd538-b7cc-4e60-9081-2a2ae0abdf80",
-      "name": "Workflow Configuration",
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
-      "position": [
-        -2016,
-        288
-      ]
-    },
-    {
-      "parameters": {
         "method": "POST",
-        "url": "={{ $('Workflow Configuration').first().json.zohoApiUrl }}/invoices?organization_id={{ $('Workflow Configuration').first().json.zohoOrganizationId }}",
+        "url": "={{ $('ZoHo Settings').first().json.zohoApiUrl }}/invoices?organization_id={{ $('ZoHo Settings').first().json.zohoOrganizationId }}",
         "authentication": "genericCredentialType",
         "genericAuthType": "oAuth2Api",
         "sendBody": true,
@@ -53,17 +23,17 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.3,
       "position": [
-        -192,
-        112
+        272,
+        192
       ],
       "credentials": {
         "zohoOAuth2Api": {
-          "id": "YOUR_ZOHO_OAUTH_CREDENTIAL_ID",
-          "name": "Zoho account"
+          "id": "",
+          "name": "YOUR_ZOHO_OAUTH2_CREDENTIAL"
         },
         "oAuth2Api": {
-          "id": "YOUR_ZOHO_OAUTH_CREDENTIAL_ID",
-          "name": "Zoho - Lodgepole"
+          "id": "",
+          "name": "YOUR_ZOHO_OAUTH2_CREDENTIAL"
         }
       }
     },
@@ -76,7 +46,7 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2.1,
       "position": [
-        -2240,
+        -2352,
         288
       ],
       "id": "13a83d30-eb3b-4f21-9f51-9541b353a5fd",
@@ -87,17 +57,17 @@
       "parameters": {
         "base": {
           "__rl": true,
-          "value": "YOUR_AIRTABLE_BASE_ID",
+          "value": "appq1mwttbPrTnpWm",
           "mode": "list",
-          "cachedResultName": "Lodgepole I/O",
-          "cachedResultUrl": "https://airtable.com/YOUR_AIRTABLE_BASE_ID"
+          "cachedResultName": "YOUR_AIRTABLE_BASE",
+          "cachedResultUrl": ""
         },
         "table": {
           "__rl": true,
-          "value": "YOUR_INVOICING_TABLE_ID",
+          "value": "tblu91XzIlnR2b4hs",
           "mode": "list",
-          "cachedResultName": "Invoicing",
-          "cachedResultUrl": "https://airtable.com/YOUR_AIRTABLE_BASE_ID/YOUR_INVOICING_TABLE_ID"
+          "cachedResultName": "YOUR_AIRTABLE_TABLE",
+          "cachedResultUrl": ""
         },
         "id": "={{ $('Webhook').item.json.body.recordId }}",
         "options": {}
@@ -105,15 +75,15 @@
       "type": "n8n-nodes-base.airtable",
       "typeVersion": 2.1,
       "position": [
-        -1792,
+        -1904,
         288
       ],
       "id": "05679fcb-b91b-4bd7-bccb-c5a46a7cd2d3",
       "name": "Get Invoice",
       "credentials": {
         "airtableTokenApi": {
-          "id": "YOUR_AIRTABLE_CREDENTIAL_ID",
-          "name": "Lodgepole"
+          "id": "",
+          "name": "YOUR_AIRTABLE_CREDENTIAL"
         }
       }
     },
@@ -153,8 +123,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -432,
-        240
+        -96,
+        272
       ]
     },
     {
@@ -166,8 +136,8 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        32,
-        384
+        496,
+        464
       ]
     },
     {
@@ -208,8 +178,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        48,
-        112
+        512,
+        192
       ]
     },
     {
@@ -221,60 +191,8 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        560,
-        272
-      ]
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": false,
-            "leftValue": "",
-            "typeValidation": "loose"
-          },
-          "conditions": [
-            {
-              "id": "id-1",
-              "leftValue": "={{ $('Get Invoice').item.json['Time Logs'] }}",
-              "operator": {
-                "type": "array",
-                "operation": "exists"
-              }
-            },
-            {
-              "id": "id-2",
-              "leftValue": "={{ $('Get Invoice').item.json['Time Logs'] }}",
-              "operator": {
-                "type": "array",
-                "operation": "notEmpty"
-              }
-            }
-          ],
-          "combinator": "and"
-        },
-        "options": {}
-      },
-      "id": "f803f7de-3b2a-4bef-8c9a-3843d95df1a7",
-      "name": "Check Time Logs Exist",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.3,
-      "position": [
-        -1568,
-        96
-      ]
-    },
-    {
-      "parameters": {
-        "errorMessage": "=No time logs found for this invoice. Invoice #{{ $('Get Invoice').first().json.RecordID }} has no associated time entries."
-      },
-      "id": "5435cb44-b0a8-4f62-93a3-2d6fa3d28f2c",
-      "name": "No Time Logs Found",
-      "type": "n8n-nodes-base.stopAndError",
-      "typeVersion": 1,
-      "position": [
-        -1264,
-        192
+        1184,
+        480
       ]
     },
     {
@@ -284,8 +202,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        336,
-        80
+        960,
+        256
       ],
       "id": "541108e2-31ba-4341-b7f2-64ed8e8e6886",
       "name": "Create QB Desktop iif file (Javascript)"
@@ -298,27 +216,27 @@
       "type": "n8n-nodes-base.dropbox",
       "typeVersion": 1,
       "position": [
-        560,
-        80
+        1184,
+        256
       ],
       "id": "0358780f-e3ca-4dde-b490-0d3b35d55711",
       "name": "Upload QB file to Dropbox",
       "credentials": {
         "dropboxOAuth2Api": {
-          "id": "YOUR_DROPBOX_CREDENTIAL_ID",
-          "name": "Dropbox account"
+          "id": "",
+          "name": "YOUR_DROPBOX_OAUTH2_CREDENTIAL"
         }
       }
     },
     {
       "parameters": {
-        "jsCode": "// Get the invoice data\nconst invoiceData = $('Get Invoice').first().json;\nconst billableRate = invoiceData['Billable Rate'] ? invoiceData['Billable Rate'][0] : 0;\nconst invoiceDate = invoiceData['Date'] || new Date().toISOString().split('T')[0];\nconst invoiceNumber = invoiceData['RecordID'];\nconst zohoCustomerID = invoiceData['Zoho Customer ID'] ? invoiceData['Zoho Customer ID'][0] : null;\n\nconst lineItems = [];\n\n// Get all merged items (both time logs and expenses)\nconst allItems = $input.all();\n\nallItems.forEach(item => {\n  const data = item.json;\n  \n  // Check if this is a time log (has Total Hours field) or expense (has Amount field)\n  if (data['Total Hours']) {\n    // This is a time log\n    const titleField = data['Title'];\n    const title = Array.isArray(titleField) ? titleField[0] : (typeof titleField === 'object' ? titleField.value : titleField) || 'Time Entry';\n    \n    const hoursField = data['Total Hours'];\n    const hoursRaw = Array.isArray(hoursField) ? hoursField[0] : (typeof hoursField === 'object' ? hoursField.value : hoursField) || 0;\n    const hours = Math.round(hoursRaw * 100) / 100;\n    \n    const dateField = data['Date'];\n    const date = Array.isArray(dateField) ? dateField[0] : (typeof dateField === 'object' ? dateField.value : dateField) || '';\n    \n    const projectNameField = data['Project Name'];\n    const projectName = Array.isArray(projectNameField) ? projectNameField[0] : (typeof projectNameField === 'object' ? projectNameField.value : projectNameField) || 'Consulting Services';\n    \n    lineItems.push({\n      name: projectName,\n      description: `${date}: ${title}`,\n      rate: billableRate,\n      quantity: hours\n    });\n    \n  } else if (data['Amount']) {\n    // This is an expense\n    const expenseNameField = data['Expense Name'];\n    const expenseName = Array.isArray(expenseNameField) ? expenseNameField[0] : (typeof expenseNameField === 'object' ? expenseNameField.value : expenseNameField) || 'Expense';\n    \n    const amountField = data['Amount'];\n    const amount = Array.isArray(amountField) ? amountField[0] : (typeof amountField === 'object' ? amountField.value : amountField) || 0;\n    \n    const dateField = data['Date'];\n    const date = Array.isArray(dateField) ? dateField[0] : (typeof dateField === 'object' ? dateField.value : dateField) || '';\n    \n    const notesField = data['Notes'];\n    const notes = Array.isArray(notesField) ? notesField[0] : (typeof notesField === 'object' ? notesField.value : notesField) || '';\n    \n    const categoryField = data['Category'];\n    const category = Array.isArray(categoryField) ? categoryField[0] : (typeof categoryField === 'object' ? categoryField.value : categoryField) || '';\n    \n    lineItems.push({\n      name: \"Expense\",\n      description: `${date}: ${expenseName}${category ? ' (' + category + ')' : ''}${notes ? ' - ' + notes : ''}`,\n      rate: amount,\n      quantity: 1\n    });\n  }\n});\n\n// Return all fields needed for Zoho\nreturn [{\n  json: {\n    customer_id: zohoCustomerID,\n    invoice_number: invoiceNumber,\n    date: invoiceDate,\n    line_items: lineItems,\n    notes: `Invoice for ${invoiceData.RecordID || 'services'}`\n  }\n}];"
+        "jsCode": "const invoiceData = $('Get Invoice').first().json;\nconst billableRate = invoiceData['Billable Rate'] ? invoiceData['Billable Rate'][0] : 0;\nconst invoiceDate = invoiceData['Date'] || new Date().toISOString().split('T')[0];\nconst invoiceNumber = invoiceData['Invoice #'];\nconst zohoCustomerID = invoiceData['Zoho Customer ID'] ? invoiceData['Zoho Customer ID'][0] : null;\n\nconst lineItems = [];\n\nfunction resolveField(field, fallback = '') {\n  if (field === null || field === undefined) return fallback;\n  if (Array.isArray(field)) return field[0] ?? fallback;\n  if (typeof field === 'object') return field.value ?? fallback;\n  return field;\n}\n\nconst allItems = $input.all();\n\nallItems.forEach(item => {\n  const data = item.json;\n\n  if (data['_empty']) return;\n\n  if (data['Week']) {\n    // Time entry\n    const title = resolveField(data['Title'], 'Time Entry');\n    const description = resolveField(data['Description'], title);\n    const hours = Math.round((data['Total Hours'] || 0) * 100) / 100;\n    const date = resolveField(data['Date']);\n    const projectName = resolveField(data['Project Name'], 'Consulting Services');\n\n    lineItems.push({\n      name: `${date}: ${projectName}`,\n      description: description,\n      rate: billableRate,\n      quantity: hours\n    });\n\n  } else if (data['Amount']) {\n    // Expense\n    const expenseName = resolveField(data['Expense Name'], 'Expense');\n    const amount = resolveField(data['Amount'], 0);\n    const date = resolveField(data['Date']);\n    const notes = resolveField(data['Notes']);\n    const category = resolveField(data['Category']);\n\n    lineItems.push({\n      name: 'Expense',\n      description: `${date}: ${expenseName}${category ? ' (' + category + ')' : ''}${notes ? ' - ' + notes : ''}`,\n      rate: amount,\n      quantity: 1\n    });\n\n  } else if (data['Miles']) {\n    // Mileage\n    const miles = resolveField(data['Miles'], 0);\n    const date = resolveField(data['Date']);\n    const notes = resolveField(data['Notes']);\n    const rate = resolveField(data['Rate'], 0);\n\n    lineItems.push({\n      name: 'Mileage',\n      description: `${date}: ${notes || 'Mileage'}`,\n      rate: rate,\n      quantity: miles\n    });\n  }\n});\n\nreturn [{\n  json: {\n    customer_id: zohoCustomerID,\n    invoice_number: invoiceNumber,\n    date: invoiceDate,\n    line_items: lineItems,\n    notes: `Thank You!`\n  }\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -656,
-        240
+        -320,
+        272
       ],
       "id": "56a98ba3-fca3-4fa2-9227-3734ff1a0881",
       "name": "Create Zoho fields (JavaScript)"
@@ -335,12 +253,22 @@
           "conditions": [
             {
               "id": "0dafa8ae-3bb0-4815-b873-8a074c027cbe",
-              "leftValue": "",
+              "leftValue": "={{ $json['Expense Link'] }}",
               "rightValue": "",
               "operator": {
-                "type": "string",
-                "operation": "equals",
-                "name": "filter.operator.equals"
+                "type": "array",
+                "operation": "exists",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "e79c31ac-d038-4126-a46a-a305d8eb1609",
+              "leftValue": "={{ $json['Expense Link'] }}",
+              "rightValue": "",
+              "operator": {
+                "type": "array",
+                "operation": "notEmpty",
+                "singleValue": true
               }
             }
           ],
@@ -351,49 +279,37 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -1568,
-        544
+        -1616,
+        288
       ],
       "id": "716ec0ca-0a7c-4648-a6a9-18d2cc76f6e1",
       "name": "Check if Expenses exist"
     },
     {
       "parameters": {
-        "errorMessage": "=No time logs found for this invoice. Invoice #{{ $('Get Invoice').first().json.RecordID }} has no associated time entries."
-      },
-      "id": "d144051c-b76a-40df-9d13-319cfa6edc7e",
-      "name": "No Expenses Found",
-      "type": "n8n-nodes-base.stopAndError",
-      "typeVersion": 1,
-      "position": [
-        -1280,
-        624
-      ]
-    },
-    {
-      "parameters": {
-        "fieldToSplitOut": "['Time Logs']",
+        "fieldToSplitOut": "['Time Link']",
         "options": {}
       },
       "type": "n8n-nodes-base.splitOut",
       "typeVersion": 1,
       "position": [
-        -1264,
-        0
+        -1296,
+        -320
       ],
       "id": "51bb0379-d32a-40c8-9ccb-4de128590a5b",
       "name": "Split Out Time"
     },
     {
       "parameters": {
-        "fieldToSplitOut": "Expenses",
+        "fieldToSplitOut": "['Expense Link']",
+        "include": "={{ $json['Expense Link'] }}",
         "options": {}
       },
       "type": "n8n-nodes-base.splitOut",
       "typeVersion": 1,
       "position": [
-        -1280,
-        432
+        -1296,
+        192
       ],
       "id": "d1f8a378-1dda-40e4-a558-6b08fdc828d0",
       "name": "Split Out Expenses"
@@ -402,33 +318,33 @@
       "parameters": {
         "base": {
           "__rl": true,
-          "value": "YOUR_AIRTABLE_BASE_ID",
+          "value": "appq1mwttbPrTnpWm",
           "mode": "list",
-          "cachedResultName": "Lodgepole I/O",
-          "cachedResultUrl": "https://airtable.com/YOUR_AIRTABLE_BASE_ID"
+          "cachedResultName": "YOUR_AIRTABLE_BASE",
+          "cachedResultUrl": ""
         },
         "table": {
           "__rl": true,
-          "value": "YOUR_EXPENSES_TABLE_ID",
+          "value": "tblEzfVCtEEIilpG6",
           "mode": "list",
-          "cachedResultName": "Expenses",
-          "cachedResultUrl": "https://airtable.com/YOUR_AIRTABLE_BASE_ID/YOUR_EXPENSES_TABLE_ID"
+          "cachedResultName": "YOUR_AIRTABLE_TABLE",
+          "cachedResultUrl": ""
         },
-        "id": "={{ $json.Expenses }}",
+        "id": "={{ $json['[\\'Expense Link\\']'] }}",
         "options": {}
       },
       "type": "n8n-nodes-base.airtable",
       "typeVersion": 2.1,
       "position": [
-        -1040,
-        432
+        -1072,
+        192
       ],
       "id": "06b0821e-677c-4600-bca1-e14d08be8c4f",
       "name": "Get Expenses",
       "credentials": {
         "airtableTokenApi": {
-          "id": "YOUR_AIRTABLE_CREDENTIAL_ID",
-          "name": "Lodgepole"
+          "id": "",
+          "name": "YOUR_AIRTABLE_CREDENTIAL"
         }
       }
     },
@@ -436,46 +352,49 @@
       "parameters": {
         "base": {
           "__rl": true,
-          "value": "YOUR_AIRTABLE_BASE_ID",
+          "value": "appq1mwttbPrTnpWm",
           "mode": "list",
-          "cachedResultName": "Lodgepole I/O",
-          "cachedResultUrl": "https://airtable.com/YOUR_AIRTABLE_BASE_ID"
+          "cachedResultName": "YOUR_AIRTABLE_BASE",
+          "cachedResultUrl": ""
         },
         "table": {
           "__rl": true,
-          "value": "YOUR_TIME_LOGS_TABLE_ID",
+          "value": "tbllxkeMBvClVgTBp",
           "mode": "list",
-          "cachedResultName": "Time Logs",
-          "cachedResultUrl": "https://airtable.com/YOUR_AIRTABLE_BASE_ID/YOUR_TIME_LOGS_TABLE_ID"
+          "cachedResultName": "YOUR_AIRTABLE_TABLE",
+          "cachedResultUrl": ""
         },
-        "id": "={{ $json['[\\'Time Logs\\']'] }}",
+        "id": "={{ $json['[\\'Time Link\\']'] }}",
         "options": {}
       },
       "type": "n8n-nodes-base.airtable",
       "typeVersion": 2.1,
       "position": [
-        -1040,
-        0
+        -1088,
+        -320
       ],
       "id": "5b8d0f99-5ff9-4279-b231-05e25f353f8e",
       "name": "Get Time Entries",
       "credentials": {
         "airtableTokenApi": {
-          "id": "YOUR_AIRTABLE_CREDENTIAL_ID",
-          "name": "Lodgepole"
+          "id": "",
+          "name": "YOUR_AIRTABLE_CREDENTIAL"
         }
       }
     },
     {
-      "parameters": {},
+      "parameters": {
+        "numberInputs": 3
+      },
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        -848,
-        240
+        -528,
+        256
       ],
       "id": "e4c89f6a-2581-4e31-bb89-2744891893be",
-      "name": "Merge"
+      "name": "Merge",
+      "onError": "continueRegularOutput"
     },
     {
       "parameters": {
@@ -483,9 +402,9 @@
         "select": "user",
         "user": {
           "__rl": true,
-          "value": "YOUR_SLACK_USER_ID",
+          "value": "U0A5U82GS4T",
           "mode": "list",
-          "cachedResultName": "YOUR_SLACK_USERNAME"
+          "cachedResultName": "kendavisdev"
         },
         "text": "=Can not create Zoho invoice, missing data for:  {{ $('Get Invoice').item.json.RecordID }}",
         "otherOptions": {}
@@ -493,16 +412,16 @@
       "type": "n8n-nodes-base.slack",
       "typeVersion": 2.4,
       "position": [
-        -192,
-        384
+        272,
+        464
       ],
       "id": "78574c98-bf48-4315-8647-00ac02cb1d88",
       "name": "Send Slack message",
       "webhookId": "99f786f4-19df-4ffc-a13f-3cbac76cb9ce",
       "credentials": {
         "slackOAuth2Api": {
-          "id": "YOUR_SLACK_CREDENTIAL_ID",
-          "name": "Slack account"
+          "id": "",
+          "name": "YOUR_SLACK_OAUTH2_CREDENTIAL"
         }
       }
     },
@@ -512,9 +431,9 @@
         "select": "user",
         "user": {
           "__rl": true,
-          "value": "YOUR_SLACK_USER_ID",
+          "value": "U0A5U82GS4T",
           "mode": "list",
-          "cachedResultName": "YOUR_SLACK_USERNAME"
+          "cachedResultName": "kendavisdev"
         },
         "text": "=Zoho could not create the {{ $('Check Required Fields').item.json.invoice_number }} invoice.",
         "otherOptions": {}
@@ -522,43 +441,62 @@
       "type": "n8n-nodes-base.slack",
       "typeVersion": 2.4,
       "position": [
-        336,
-        272
+        960,
+        480
       ],
       "id": "d455ae70-b2f2-4735-8040-4ac4549e4eea",
       "name": "Send Slack message1",
       "webhookId": "6c7848f9-b188-4fdf-b8ac-5ec0a68d20a0",
       "credentials": {
         "slackOAuth2Api": {
-          "id": "YOUR_SLACK_CREDENTIAL_ID",
-          "name": "Slack account"
+          "id": "",
+          "name": "YOUR_SLACK_OAUTH2_CREDENTIAL"
         }
       }
     },
     {
       "parameters": {
-        "authentication": "oAuth2",
-        "path": "=/Lodgepole IO/To-do/Invoicing/{{ $('Get the Zoho invoice').first().json.invoice.invoice_number }}.pdf",
-        "binaryData": true
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "id-1",
+              "leftValue": "={{ $('Get Invoice').item.json['Time Link'] }}",
+              "operator": {
+                "type": "array",
+                "operation": "exists"
+              }
+            },
+            {
+              "id": "id-2",
+              "leftValue": "={{ $('Get Invoice').item.json['Time Link'] }}",
+              "operator": {
+                "type": "array",
+                "operation": "notEmpty"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
       },
-      "type": "n8n-nodes-base.dropbox",
-      "typeVersion": 1,
+      "id": "f803f7de-3b2a-4bef-8c9a-3843d95df1a7",
+      "name": "Check Time Exist",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
       "position": [
-        560,
-        -96
-      ],
-      "id": "c43d515f-38b5-4431-9e66-7cd4b4cbd393",
-      "name": "Upload a file",
-      "credentials": {
-        "dropboxOAuth2Api": {
-          "id": "YOUR_DROPBOX_CREDENTIAL_ID",
-          "name": "Dropbox account"
-        }
-      }
+        -1600,
+        -224
+      ]
     },
     {
       "parameters": {
-        "url": "={{ $('Workflow Configuration').first().json.zohoApiUrl }}/invoices/{{ $('Create Invoice in Zoho').item.json.invoice.invoice_id }}?accept=pdf&organization_id={{ $('Workflow Configuration').first().json.zohoOrganizationId }}",
+        "url": "={{ $('ZoHo Settings').first().json.zohoApiUrl }}/invoices/{{ $('Create Invoice in Zoho').item.json.invoice.invoice_id }}?accept=pdf&organization_id={{ $('ZoHo Settings').first().json.zohoOrganizationId }}",
         "authentication": "genericCredentialType",
         "genericAuthType": "oAuth2Api",
         "options": {
@@ -572,37 +510,577 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.3,
       "position": [
-        336,
-        -96
+        960,
+        32
       ],
       "id": "00e54b87-de83-47e7-abd4-f308cf3708b8",
-      "name": "Get the Zoho invoice",
+      "name": "Get Zoho invoice",
       "credentials": {
         "oAuth2Api": {
-          "id": "YOUR_ZOHO_OAUTH_CREDENTIAL_ID",
-          "name": "Zoho - Lodgepole"
+          "id": "",
+          "name": "YOUR_ZOHO_OAUTH2_CREDENTIAL"
         }
       }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appq1mwttbPrTnpWm",
+          "mode": "list",
+          "cachedResultName": "YOUR_AIRTABLE_BASE",
+          "cachedResultUrl": ""
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblu91XzIlnR2b4hs",
+          "mode": "list",
+          "cachedResultName": "YOUR_AIRTABLE_TABLE",
+          "cachedResultUrl": ""
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $('Get Invoice').first().json.id }}",
+            "Status": "Invoiced",
+            "Invoice Link": "={{ \"https://www.dropbox.com/home\" + $('Upload Invoice').first().json.path_lower }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "RecordID",
+              "displayName": "RecordID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Client",
+              "displayName": "Client",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Projects",
+              "displayName": "Projects",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Open",
+                  "value": "Open"
+                },
+                {
+                  "name": "Invoiced",
+                  "value": "Invoiced"
+                },
+                {
+                  "name": "Submitted",
+                  "value": "Submitted"
+                },
+                {
+                  "name": "Paid",
+                  "value": "Paid"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Total Hours",
+              "displayName": "Total Hours",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Billable Rate",
+              "displayName": "Billable Rate",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Expense Total",
+              "displayName": "Expense Total",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Mileage Total",
+              "displayName": "Mileage Total",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Invoice Total",
+              "displayName": "Invoice Total",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Notes",
+              "displayName": "Notes",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Attachments",
+              "displayName": "Attachments",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Invoiced",
+              "displayName": "Invoiced",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Time Link",
+              "displayName": "Time Link",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Expense Link",
+              "displayName": "Expense Link",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Mileage Link",
+              "displayName": "Mileage Link",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Zoho Customer ID",
+              "displayName": "Zoho Customer ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Invoice Link",
+              "displayName": "Invoice Link",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        1392,
+        32
+      ],
+      "id": "851e7447-4c22-489b-957f-af2ccff3e5b9",
+      "name": "Update Invoice",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "",
+          "name": "YOUR_AIRTABLE_CREDENTIAL"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "path": "=/Lodgepole IO/To-do/Invoicing/{{ $('Get Zoho invoice').first().json.invoice.invoice_number }}.pdf",
+        "binaryData": true
+      },
+      "type": "n8n-nodes-base.dropbox",
+      "typeVersion": 1,
+      "position": [
+        1184,
+        32
+      ],
+      "id": "c43d515f-38b5-4431-9e66-7cd4b4cbd393",
+      "name": "Upload Invoice",
+      "credentials": {
+        "dropboxOAuth2Api": {
+          "id": "",
+          "name": "YOUR_DROPBOX_OAUTH2_CREDENTIAL"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "0dafa8ae-3bb0-4815-b873-8a074c027cbe",
+              "leftValue": "={{ $json['Mileage Link'] }}",
+              "rightValue": "",
+              "operator": {
+                "type": "array",
+                "operation": "exists",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "e79c31ac-d038-4126-a46a-a305d8eb1609",
+              "leftValue": "={{ $json['Mileage Link'] }}",
+              "rightValue": "",
+              "operator": {
+                "type": "array",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -1632,
+        704
+      ],
+      "id": "c7ba6550-cd02-4350-b0b1-d30d653cd8e8",
+      "name": "Check if Mileage exist"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "['Mileage Link']",
+        "include": "={{ $json['Mileage Link'] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -1296,
+        608
+      ],
+      "id": "c553463f-f572-4795-98c0-b9734595bc3b",
+      "name": "Split Out Mileage"
+    },
+    {
+      "parameters": {
+        "base": {
+          "__rl": true,
+          "value": "appq1mwttbPrTnpWm",
+          "mode": "list",
+          "cachedResultName": "YOUR_AIRTABLE_BASE",
+          "cachedResultUrl": ""
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblvS5yqe1CMXxsiJ",
+          "mode": "list",
+          "cachedResultName": "YOUR_AIRTABLE_TABLE",
+          "cachedResultUrl": ""
+        },
+        "id": "={{ $json['[\\'Mileage Link\\']'] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -1072,
+        608
+      ],
+      "id": "d654da4f-1609-4d81-9fdc-3e57e9c4fd86",
+      "name": "Get Expenses1",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "",
+          "name": "YOUR_AIRTABLE_CREDENTIAL"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\n// If no items, or routed here from false branch with the invoice record\nconst hasRealExpenses = items.some(item => item.json['Amount']);\n\nif (!hasRealExpenses) {\n  return [{ json: { _empty: true } }];\n}\n\nreturn items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1296,
+        832
+      ],
+      "id": "5eac3c0a-5e8f-472f-85b9-8d277d3d1650",
+      "name": "Check for Mileage"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\n// If no items, or routed here from false branch with the invoice record\nconst hasRealExpenses = items.some(item => item.json['Amount']);\n\nif (!hasRealExpenses) {\n  return [{ json: { _empty: true } }];\n}\n\nreturn items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1296,
+        416
+      ],
+      "id": "0f3ff5d8-d348-41bd-84fa-7ec363975345",
+      "name": "Check for Expenses"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "zohoApiUrl",
+              "value": "https://www.zohoapis.com/invoice/v3",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "zohoOrganizationId",
+              "value": "YOUR_ZOHO_ORGANIZATION_ID",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "c62cd538-b7cc-4e60-9081-2a2ae0abdf80",
+      "name": "ZoHo Settings",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -2128,
+        288
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nconst hasRealTimeEntries = items.some(item => item.json['Week']);\n\nif (!hasRealTimeEntries) {\n  return [{ json: { _empty: true } }];\n}\n\nreturn items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1312,
+        -80
+      ],
+      "id": "f5cb5249-1478-4be4-b915-3591eba42654",
+      "name": "Check for Time"
+    },
+    {
+      "parameters": {
+        "content": "## Time Entries, Expenses & Mileage\nRetrieve the time entires, any expenses and reimbursable mileage from Airtable. If none exist, then make sure to pass 0 to the Merge node",
+        "height": 1520,
+        "width": 864,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1712,
+        -496
+      ],
+      "typeVersion": 1,
+      "id": "df8cc3ac-043f-4bdc-a35f-d40261c2a961",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "# Create Zoho Invoice from Airtable Data \u2014 Upload to Dropbox & QuickBooks\n\nThis workflow automates the full invoicing pipeline: triggered by a webhook from Airtable, it pulls invoice data, validates required fields, creates an invoice in Zoho, fetches the PDF, uploads it to Dropbox, and generates a QuickBooks Desktop .iif file \u2014 with Slack notifications at key steps.\n\n**How it works:**\n1. Receives a webhook trigger containing an Airtable record ID\n2. Configures Zoho API settings, then fetches the invoice record from Airtable\n3. Simultaneously checks for associated time entries, expenses, and mileage records\n4. Validates that required fields (customer ID and line items) are present \u2014 stops with an error if not\n5. Creates the invoice in Zoho via API with all assembled line items\n6. Validates the Zoho response \u2014 stops with a Slack alert if the API call fails\n7. Fetches the finalized invoice PDF from Zoho\n8. Uploads the PDF invoice to Dropbox\n9. Generates a QuickBooks Desktop .iif file from the invoice data\n10. Uploads the .iif file to Dropbox for QuickBooks Desktop import\n11. Updates the Airtable invoice record to reflect completion\n12. Sends a Slack confirmation on success\n\n\n**Setup Requirements:**\n- Connect Airtable OAuth2 and update the base/table IDs in the \"Get Invoice,\" \"Get Time Entries,\" \"Get Expenses,\" and \"Update Invoice\" nodes\n- Connect Zoho Invoice OAuth2 and confirm your Organization ID in the \"ZoHo Settings\" node\n- Connect Dropbox OAuth2 and set your target folder paths in both Upload nodes\n- Connect Slack OAuth2 and set your notification channel in both Slack nodes\n- Configure your webhook trigger URL in whatever system fires the workflow (e.g., an Airtable automation)\n\n\n**Line Item Handling:**\n- Workflow checks independently for time entries, expenses, and mileage\n- Each type uses a Code node to emit an empty placeholder if no records exist \u2014 this keeps the Merge node from deadlocking when one or more categories are absent\n- All three branches merge before invoice creation, ensuring complete line items regardless of which categories have data\n\n\n**Error Handling:**\n- Missing required fields (customer ID or line items): workflow stops and sends a Slack alert\n- Zoho API failure: workflow stops and sends a separate Slack alert with response details\n- All stops use n8n's native Stop and Error node for visibility in execution logs\n\n\n**Note:** Workflow is triggered on-demand via webhook \u2014 it does not run on a schedule. One webhook call = one invoice processed.",
+        "height": 1056,
+        "width": 672
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -3216,
+        -224
+      ],
+      "typeVersion": 1,
+      "id": "34664f59-8009-433e-9ab8-03f78de8158b",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Merge Airtable data, prepare data for Zoho \n",
+        "height": 528,
+        "width": 752,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -640,
+        96
+      ],
+      "typeVersion": 1,
+      "id": "1cae7d85-aa5c-4e82-a465-0e901ecd80a5",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Create ZoHo invoice\nSend Slack message if fail\n",
+        "height": 528,
+        "width": 528,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        176,
+        96
+      ],
+      "typeVersion": 1,
+      "id": "da341b06-e93e-4d1f-aa35-c0f2e7b6bea5",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "### Post .pdf to Dropbox\n- Retrieve .pdf copy of the invoice\n- Upload to Dropbox\n- Update Airtable",
+        "height": 128,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1600,
+        16
+      ],
+      "typeVersion": 1,
+      "id": "36795c0d-aa8c-4086-bc06-29b76118c8d7",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "### QB Desktop \n- Create an .iif version of the invoice to be imported into QB desktop\n- Save file to Dropbox",
+        "height": 128,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1392,
+        256
+      ],
+      "typeVersion": 1,
+      "id": "fb8fe791-9bb5-4e8f-8053-3ca9e548d5a7",
+      "name": "Sticky Note5"
     }
   ],
   "pinData": {},
   "connections": {
-    "Workflow Configuration": {
-      "main": [
-        [
-          {
-            "node": "Get Invoice",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Webhook": {
       "main": [
         [
           {
-            "node": "Workflow Configuration",
+            "node": "ZoHo Settings",
             "type": "main",
             "index": 0
           }
@@ -618,25 +1096,12 @@
             "index": 0
           },
           {
-            "node": "Check Time Logs Exist",
+            "node": "Check Time Exist",
             "type": "main",
             "index": 0
-          }
-        ]
-      ]
-    },
-    "Check Time Logs Exist": {
-      "main": [
-        [
+          },
           {
-            "node": "Split Out Time",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "No Time Logs Found",
+            "node": "Check if Mileage exist",
             "type": "main",
             "index": 0
           }
@@ -681,7 +1146,7 @@
             "index": 0
           },
           {
-            "node": "Get the Zoho invoice",
+            "node": "Get Zoho invoice",
             "type": "main",
             "index": 0
           }
@@ -728,7 +1193,7 @@
         ],
         [
           {
-            "node": "No Expenses Found",
+            "node": "Check for Expenses",
             "type": "main",
             "index": 0
           }
@@ -761,7 +1226,7 @@
       "main": [
         [
           {
-            "node": "Merge",
+            "node": "Check for Time",
             "type": "main",
             "index": 0
           }
@@ -772,9 +1237,9 @@
       "main": [
         [
           {
-            "node": "Merge",
+            "node": "Check for Expenses",
             "type": "main",
-            "index": 1
+            "index": 0
           }
         ]
       ]
@@ -812,16 +1277,129 @@
         ]
       ]
     },
-    "Upload a file": {
+    "Check Time Exist": {
+      "main": [
+        [
+          {
+            "node": "Split Out Time",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Check for Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Zoho invoice": {
+      "main": [
+        [
+          {
+            "node": "Upload Invoice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Invoice": {
       "main": [
         []
       ]
     },
-    "Get the Zoho invoice": {
+    "Upload Invoice": {
       "main": [
         [
           {
-            "node": "Upload a file",
+            "node": "Update Invoice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check if Mileage exist": {
+      "main": [
+        [
+          {
+            "node": "Split Out Mileage",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Check for Mileage",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out Mileage": {
+      "main": [
+        [
+          {
+            "node": "Get Expenses1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Expenses1": {
+      "main": [
+        [
+          {
+            "node": "Check for Mileage",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check for Mileage": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Check for Expenses": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "ZoHo Settings": {
+      "main": [
+        [
+          {
+            "node": "Get Invoice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check for Time": {
+      "main": [
+        [
+          {
+            "node": "Merge",
             "type": "main",
             "index": 0
           }
@@ -829,12 +1407,12 @@
       ]
     }
   },
-  "active": false,
+  "active": true,
   "settings": {
     "executionOrder": "v1",
     "availableInMCP": false
   },
-  "versionId": "c58038f7-9289-47b3-b182-ab43ed82064f",
+  "versionId": "367cc346-ae20-420f-b78c-5e5cd3d8ed1f",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "1f1723047214f7fc725b5736e5e3987ea6bcac0b9ff5a93b735f0a76f162f39b"
